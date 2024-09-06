@@ -50,20 +50,28 @@ import java.time.Instant as InstantJava
 @Composable
 @Preview
 fun App() {
-    val onlyBusinessDays by remember { mutableStateOf(false) }
+    val onlyBusinessDays by remember { mutableStateOf(true) }
+    val selectedDates = remember { mutableStateOf<Pair<Long?, Long?>>(Pair(null, null)) }
     val datePickerStateStart = rememberDatePickerState(
+        initialSelectedDateMillis = Clock.System.now().toEpochMilliseconds(),
         initialDisplayMode = DisplayMode.Input,
-
         selectableDates =
-            object : SelectableDates {
-                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                    val dayOfWeek = Instant.fromEpochMilliseconds(utcTimeMillis).toLocalDateTime(TimeZone.currentSystemDefault()).dayOfWeek
-                    if(onlyBusinessDays) {
-                        return dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY
-                    }
-                    return true
+        object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                val dayOfWeek = Instant.fromEpochMilliseconds(utcTimeMillis)
+                    .toLocalDateTime(TimeZone.UTC)
+                    .dayOfWeek
+                val endDate = selectedDates.value.second
+                val isValidRange = if (endDate != null) {
+                    utcTimeMillis <= endDate
+                } else true
+
+                if (onlyBusinessDays) {
+                    return dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY && isValidRange
                 }
+                return isValidRange
             }
+        }
     )
     val datePickerStateEnd = rememberDatePickerState(
         initialSelectedDateMillis = Clock.System.now().toEpochMilliseconds(),
@@ -71,14 +79,25 @@ fun App() {
         selectableDates =
         object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                val dayOfWeek = Instant.fromEpochMilliseconds(utcTimeMillis).toLocalDateTime(TimeZone.currentSystemDefault()).dayOfWeek
-                if(onlyBusinessDays) {
-                    return dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY
+                val dayOfWeek = Instant.fromEpochMilliseconds(utcTimeMillis)
+                    .toLocalDateTime(TimeZone.UTC)
+                    .dayOfWeek
+                val startDate = selectedDates.value.first
+                val isValidRange = if (startDate != null) {
+                    utcTimeMillis >= startDate
+                } else true
+
+                if (onlyBusinessDays) {
+                    return dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY && isValidRange
                 }
-                return true
+                return isValidRange
             }
         }
     )
+
+    LaunchedEffect(datePickerStateStart.selectedDateMillis, datePickerStateEnd.selectedDateMillis) {
+        selectedDates.value = Pair(datePickerStateStart.selectedDateMillis, datePickerStateEnd.selectedDateMillis)
+    }
     MaterialTheme3(
         colorScheme = if (isSystemInDarkTheme()) darkColorScheme else lightColorScheme,
 
@@ -100,7 +119,9 @@ fun App() {
                     dateState = datePickerStateStart,
                     title = "Inicio"
                 )
-
+                if (datePickerStateStart.selectedDateMillis != null) {
+                    println(Instant.fromEpochMilliseconds(datePickerStateEnd.selectedDateMillis?: Clock.System.now().toEpochMilliseconds()).daysUntil(Instant.fromEpochMilliseconds(datePickerStateStart.selectedDateMillis?: Clock.System.now().toEpochMilliseconds()), TimeZone.UTC))
+                }
 
                 DatePickerComposable(
                     modifier = Modifier,

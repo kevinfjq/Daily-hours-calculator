@@ -34,11 +34,11 @@ class DateTimeController {
         }
 
         fun getDays(instant1: Instant, instant2 : Instant): Int {
-            println(instant1.toLocalDateTime(TimeZone.currentSystemDefault()))
-            return instant1.daysUntil(instant2, TimeZone.currentSystemDefault())
+            println(instant1.toLocalDateTime(TimeZone.UTC))
+            return instant1.daysUntil(instant2, TimeZone.UTC)
         }
         fun getDayOfWeek(instant: Instant): DayOfWeek {
-            val dayOfWeek = instant.toLocalDateTime(TimeZone.currentSystemDefault()).dayOfWeek
+            val dayOfWeek = instant.toLocalDateTime(TimeZone.UTC).dayOfWeek
             return DayOfWeek.valueOf(dayOfWeek.toString())
         }
 
