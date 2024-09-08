@@ -1,22 +1,12 @@
 package org.example.internshipcalculator.utils
 
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.toLocalDateTime
 
 class DateTimeController {
-
-    enum class DayOfWeek {
-        SUNDAY,
-        MONDAY,
-        TUESDAY,
-        WEDNESDAY,
-        THURSDAY,
-        FRIDAY,
-        SATURDAY
-    }
-
 
     companion object {
         val dayOfWeekList = listOf(
@@ -33,31 +23,34 @@ class DateTimeController {
             return Instant.fromEpochMilliseconds(milliSeconds)
         }
 
-        fun getDays(instant1: Instant, instant2 : Instant): Int {
-            println(instant1.toLocalDateTime(TimeZone.UTC))
-            return instant1.daysUntil(instant2, TimeZone.UTC)
+        fun getDaysDifference(instant1: Instant, instant2 : Instant): Int {
+            if(instant1.daysUntil(instant2, TimeZone.UTC) >= 0) {
+                return instant1.daysUntil(instant2, TimeZone.UTC)
+            } else throw Exception("Invalid date range")
         }
         fun getDayOfWeek(instant: Instant): DayOfWeek {
             val dayOfWeek = instant.toLocalDateTime(TimeZone.UTC).dayOfWeek
             return DayOfWeek.valueOf(dayOfWeek.toString())
         }
 
-        fun calculateBusinessDays(instant1: Instant, instant2: Instant, startDate: DayOfWeek, endDate: DayOfWeek): Int {
-            val days = getDays(instant1, instant2)
-            var index = dayOfWeekList.indexOf(startDate)
+        fun calculateBusinessDays(instant1: Instant, instant2: Instant, startDate: DayOfWeek): Int {
+            val days = getDaysDifference(instant1, instant2)
+            var index = (dayOfWeekList.indexOf(startDate)) -1
             var count = 0
             for (i in 0..days) {
+                index++
+                if(index >= dayOfWeekList.size) {
+                    index = 0
+                }
                 if(dayOfWeekList[index] == DayOfWeek.SUNDAY || dayOfWeekList[index] == DayOfWeek.SATURDAY) {
                     if(index == dayOfWeekList.size) {
+                        println("Index reset " + index)
                         index = 0
                     }
                     continue
                 }
                 count++
-                index++
-                if(index == dayOfWeekList.size) {
-                    index = 0
-                }
+
             }
             return count
         }

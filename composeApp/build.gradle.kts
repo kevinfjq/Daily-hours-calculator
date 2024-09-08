@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
+
 }
 
 kotlin {
@@ -16,11 +17,20 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     jvm("desktop")
     
     sourceSets {
         val desktopMain by getting
+
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(kotlin("test-annotations-common"))
+                implementation(kotlin("test-junit"))
+                implementation(kotlin("test-common"))
+            }
+        }
         
         androidMain.dependencies {
             implementation(compose.preview)
@@ -82,7 +92,9 @@ android {
     }
 }
 dependencies {
+    testImplementation(libs.junit.junit)
 }
+
 
 compose.desktop {
     application {
