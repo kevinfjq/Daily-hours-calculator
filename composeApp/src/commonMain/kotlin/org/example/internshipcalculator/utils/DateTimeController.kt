@@ -24,9 +24,12 @@ class DateTimeController {
         }
 
         fun getDaysDifference(instant1: Instant, instant2 : Instant): Int {
-            if(instant1.daysUntil(instant2, TimeZone.UTC) >= 0) {
-                return instant1.daysUntil(instant2, TimeZone.UTC)
-            } else throw Exception("Invalid date range")
+            val days = instant1.daysUntil(instant2, TimeZone.UTC)
+            println(days)
+            if(days >= 0) {
+                return days +1
+            }
+            throw Exception("Invalid date range")
         }
         fun getDayOfWeek(instant: Instant): DayOfWeek {
             val dayOfWeek = instant.toLocalDateTime(TimeZone.UTC).dayOfWeek
@@ -52,7 +55,7 @@ class DateTimeController {
                 count++
 
             }
-            return count
+            return count -1
         }
 
         fun getHours(days: Int, hours: Int): Int {
