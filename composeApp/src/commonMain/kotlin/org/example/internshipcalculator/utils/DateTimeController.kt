@@ -54,5 +54,9 @@ class DateTimeController {
             }
             return count
         }
+
+        fun getHours(days: Int, hours: Int): Int {
+            return days * hours
+        }
     }
 }
